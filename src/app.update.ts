@@ -21,7 +21,7 @@ export class AppUpdate {
 
   @Hears("👤 Ro'yhatdan o'tish")
   async registrtion(@Ctx() ctx: Context) {
-    console.log('1');
+    return this.appService.registration(ctx);
   }
 
   @Hears('👨‍🚀 Usta')

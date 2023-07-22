@@ -2,23 +2,13 @@ import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 interface UserAttr {
   user_id: string;
-  phone_number: string;
   first_name: string;
   last_name: string;
-  username: string;
-  status: boolean;
-  last_state: string;
+  phone_number: string;
   real_name: string;
+  username: string;
+  last_state: string;
   message_id: string;
-  is_ban: boolean;
-  location: string;
-  distance: string;
-  paginationCount: number;
-  service_id: number;
-  searchName: string;
-  searchType: string;
-  selectMasterId: string;
-  select_day: string;
 }
 @Table({ tableName: 'user', timestamps: false })
 export class User extends Model<User, UserAttr> {
@@ -30,71 +20,27 @@ export class User extends Model<User, UserAttr> {
   })
   user_id: string;
 
-  @Column({
-    type: DataType.STRING,
-  })
-  phone_number: string;
-
-  @Column({
-    type: DataType.STRING,
-  })
+  @Column({ type: DataType.STRING })
   first_name: string;
-  @Column({
-    type: DataType.STRING,
-  })
-  real_name: string;
-  @Column({
-    type: DataType.STRING,
-  })
+
+  @Column({ type: DataType.STRING })
   last_name: string;
 
-  @Column({
-    type: DataType.STRING,
-  })
+  @Column({ type: DataType.STRING })
+  real_name: string;
+
+  @Column({ type: DataType.STRING })
+  phone_number: string;
+
+  @Column({ type: DataType.STRING })
   username: string;
-  @Column({
-    type: DataType.STRING,
-  })
-  last_state: string;
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
+
+  @Column({ type: DataType.BOOLEAN, defaultValue: false })
   status: boolean;
+
   @Column({ type: DataType.STRING })
   message_id: string;
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
-  is_ban: boolean;
-  location: string;
-  @Column({
-    type: DataType.INTEGER,
-  })
-  paginationCount: number;
-  @Column({
-    type: DataType.INTEGER,
-  })
-  service_id: number;
-  @Column({
-    type: DataType.STRING,
-  })
-  searchName: string;
-  @Column({
-    type: DataType.STRING,
-  })
-  searchType: string;
-  @Column({
-    type: DataType.STRING,
-  })
-  selectMasterId: string;
-  @Column({
-    type: DataType.STRING,
-  })
-  select_day: string;
-  @Column({
-    type: DataType.STRING(2000),
-  })
-  distance: string;
+
+  @Column({ type: DataType.STRING })
+  last_state: string;
 }
