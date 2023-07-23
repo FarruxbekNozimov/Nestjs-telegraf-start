@@ -39,6 +39,31 @@ export class AppUpdate {
     return this.appService.goBack(ctx);
   }
 
+  @Hears('🏠 Bosh menu')
+  async mainMenu(@Ctx() ctx: Context) {
+    return this.appService.mainMenu(ctx);
+  }
+
+  @Hears('📞 Aloqa')
+  async contact(@Ctx() ctx: Context) {
+    return this.appService.contact(ctx);
+  }
+
+  @Hears('🤝 Hamkorlar')
+  async partner(@Ctx() ctx: Context) {
+    return this.appService.partner(ctx);
+  }
+
+  @Hears("💳 To'lov")
+  async payment(@Ctx() ctx: Context) {
+    return this.appService.payment(ctx);
+  }
+
+  @Hears('⚙️ Sozlamalar')
+  async settings(@Ctx() ctx: Context) {
+    return this.appService.settings(ctx);
+  }
+
   @On('message')
   async onMessage(@Ctx() ctx: Context) {
     return this.appService.onMessage(ctx);

@@ -7,6 +7,11 @@ import { User } from './models/user.model';
 import { boshMenu } from './helpers/boshMenu';
 import { services } from './helpers/services';
 import { servicesList } from './constants/servicesList';
+import { aboutUs } from './constants/aboutUs';
+import { hamkorlar } from './constants/hamkorlar';
+import { firstSalom } from './helpers/firstSalom';
+import { paymentsType } from './helpers/payment';
+import { paymentsList } from './constants/payments';
 
 @Injectable()
 export class AppService {
@@ -19,19 +24,16 @@ export class AppService {
     const user = await this.userRepository.findOne({
       where: { user_id: `${ctx.from.id}` },
     });
-
+    await await firstSalom(ctx);
     if (user && user.status) {
       return await boshMenu(ctx);
     } else {
-      await ctx.reply(
-        "<b>Assalomu alaykum 👋</b>\nIltimos ro'yhatdan o'tishingiz lozim ⬇️",
-        {
-          parse_mode: 'HTML',
-          ...Markup.keyboard([["👤 Ro'yxatdan o'tish"]])
-            .oneTime()
-            .resize(),
-        },
-      );
+      await ctx.reply("Iltimos ro'yxatdan o'tishingiz lozim ⬇️", {
+        parse_mode: 'HTML',
+        ...Markup.keyboard([["👤 Ro'yxatdan o'tish"]])
+          .oneTime()
+          .resize(),
+      });
     }
   }
 
@@ -59,31 +61,7 @@ export class AppService {
   }
 
   async aboutUs(ctx: Context) {
-    await ctx.reply(
-      `
-O'zimiz yani iPro group xaqida qisqacha to'xtalsak:
-iPro bu universal guruh hisoblanadi va xozirgi kunda bizda quyidagi yo'nalishlarda xizmatlar yo'lga qo'yilgan, bular:
-      <b><i>- SMM
-      - SMD
-      - Moushen
-      - Logo, Brending 
-      - Ui&Ux
-      - Front End
-      - Back end</i></b>
-Va bu yo'nalishda o'qigan va o'qiyotgan o'quvchilarga (istedodli) talab mavjud!
-<b>Bizning hamkorlar (Brend(lar))</b>:
-      <b><i>- Quadro edu
-      - Life line
-      - baxtlioila_doroline
-      - Life Line invest
-      - China House
-      - TPP
-      - Awiner O'g'it
-      - Sultan travel</i></b>
-Va ko'plab hamkorlar mavjud!
-<b>©️ iPro group</b>`,
-      { parse_mode: 'HTML' },
-    );
+    await ctx.reply(aboutUs, { parse_mode: 'HTML' });
   }
 
   async serviceType(ctx: Context) {
@@ -109,6 +87,60 @@ Va ko'plab hamkorlar mavjud!
       if (user.last_state == 'service') {
         await user.update({ last_state: 'menu' });
         return await boshMenu(ctx);
+      } else if (user.last_state == 'payment') {
+        await user.update({ last_state: 'menu' });
+        return await boshMenu(ctx);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async mainMenu(ctx: Context) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { user_id: `${ctx.from.id}` },
+      });
+      await user.update({ last_state: 'menu' });
+      return await boshMenu(ctx);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async contact(ctx: Context) {
+    await ctx.reply(
+      `<b>☎️ Aloqa uchun telefon raqamlar </b>\n\n<b>▪️ <a href="tel:+998935533352">+998935533352</a></b>\n<b>▪️ <a href="tel:+998905463326">+998905463326</a></b>`,
+      { parse_mode: 'HTML' },
+    );
+  }
+
+  async partner(ctx: Context) {
+    await ctx.reply(hamkorlar, { parse_mode: 'HTML' });
+  }
+
+  async payment(ctx: Context) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { user_id: `${ctx.from.id}` },
+      });
+      if (user) {
+        await user.update({ last_state: 'payment' });
+        return await paymentsType(ctx);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async settings(ctx: Context) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { user_id: `${ctx.from.id}` },
+      });
+      if (user) {
+        await user.update({ last_state: 'settings' });
+        await ctx.reply(``, { parse_mode: 'HTML' });
       }
     } catch (error) {
       console.log(error);
@@ -151,12 +183,24 @@ Va ko'plab hamkorlar mavjud!
             for (let i in servicesList) {
               if (servicesList[i][0] == ctx.message.text) {
                 await ctx.reply(
-                  `<b>${servicesList[i][0]}</b>\n${servicesList[i][1]}`,
+                  `<b>${servicesList[i][0]}</b>\n\n<b><i>${servicesList[i][1]}</i></b>`,
                   { parse_mode: 'HTML' },
                 );
                 return;
               }
             }
+          } else if (user.last_state == 'payment') {
+            for (let i in paymentsList) {
+              if (paymentsList[i][0] == ctx.message.text) {
+                await ctx.reply(
+                  `<b>🔘 ${paymentsList[i][0]}</b>\n\n<b>${paymentsList[i][1]}</b>`,
+                  { parse_mode: 'HTML' },
+                );
+                return;
+              }
+            }
+          } else {
+            await await firstSalom(ctx);
           }
         }
       }
