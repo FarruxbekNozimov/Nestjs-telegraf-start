@@ -28,7 +28,6 @@ export class AppService {
     });
     await firstSalom(ctx);
     if (user && user.status) {
-      console.log('bosh menu');
       return await boshMenu(ctx);
     } else {
       await this.userRepository.create({
