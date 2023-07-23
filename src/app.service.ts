@@ -12,6 +12,7 @@ import { hamkorlar } from './constants/hamkorlar';
 import { firstSalom } from './helpers/firstSalom';
 import { paymentsType } from './helpers/payment';
 import { paymentsList } from './constants/payments';
+import { settings } from './helpers/settings';
 
 @Injectable()
 export class AppService {
@@ -79,35 +80,6 @@ export class AppService {
     console.log(ctx);
   }
 
-  async goBack(ctx: Context) {
-    try {
-      const user = await this.userRepository.findOne({
-        where: { user_id: `${ctx.from.id}` },
-      });
-      if (user.last_state == 'service') {
-        await user.update({ last_state: 'menu' });
-        return await boshMenu(ctx);
-      } else if (user.last_state == 'payment') {
-        await user.update({ last_state: 'menu' });
-        return await boshMenu(ctx);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  async mainMenu(ctx: Context) {
-    try {
-      const user = await this.userRepository.findOne({
-        where: { user_id: `${ctx.from.id}` },
-      });
-      await user.update({ last_state: 'menu' });
-      return await boshMenu(ctx);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   async contact(ctx: Context) {
     await ctx.reply(
       `<b>☎️ Aloqa uchun telefon raqamlar </b>\n\n<b>▪️ <a href="tel:+998935533352">+998935533352</a></b>\n<b>▪️ <a href="tel:+998905463326">+998905463326</a></b>`,
@@ -140,8 +112,120 @@ export class AppService {
       });
       if (user) {
         await user.update({ last_state: 'settings' });
-        await ctx.reply(``, { parse_mode: 'HTML' });
+        await settings(ctx, user);
       }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async changeName(ctx: Context) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { user_id: `${ctx.from.id}` },
+      });
+
+      if (user) {
+        await user.update({ last_state: 'change_name' });
+        await ctx.reply(`Ismingizni kiriting`, {
+          parse_mode: 'HTML',
+          ...Markup.keyboard([['❌ Bekor qilish']])
+            .oneTime()
+            .resize(),
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async changePhone(ctx: Context) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { user_id: `${ctx.from.id}` },
+      });
+
+      if (user) {
+        await user.update({ last_state: 'change_phone' });
+        await ctx.reply(`Telefon raqamingizni kiriting`, {
+          parse_mode: 'HTML',
+          ...Markup.keyboard([['❌ Bekor qilish']])
+            .oneTime()
+            .resize(),
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async cancel(ctx: Context) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { user_id: `${ctx.from.id}` },
+      });
+      if (user) {
+        await user.update({ last_state: 'settings' });
+        await settings(ctx, user);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async price(ctx: Context) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { user_id: `${ctx.from.id}` },
+      });
+      if (user) {
+        await ctx.reply(`Prays soon`, {});
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async basket(ctx: Context) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { user_id: `${ctx.from.id}` },
+      });
+      if (user) {
+        await ctx.reply(`🗑 Savatcha bo'sh 🤷‍♂️`, {});
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async goBack(ctx: Context) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { user_id: `${ctx.from.id}` },
+      });
+      if (user.last_state == 'service') {
+        await user.update({ last_state: 'menu' });
+        return await boshMenu(ctx);
+      } else if (user.last_state == 'payment') {
+        await user.update({ last_state: 'menu' });
+        return await boshMenu(ctx);
+      } else if (user.last_state == 'settings') {
+        await user.update({ last_state: 'menu' });
+        return await boshMenu(ctx);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async mainMenu(ctx: Context) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { user_id: `${ctx.from.id}` },
+      });
+      await user.update({ last_state: 'menu' });
+      return await boshMenu(ctx);
     } catch (error) {
       console.log(error);
     }
@@ -155,13 +239,19 @@ export class AppService {
       if ('text' in ctx.message) {
         if (user) {
           if (user.last_state == 'name') {
-            await user.update({
-              real_name: ctx.message.text,
-              last_state: 'phone',
-            });
-            await ctx.reply(
-              `Yaxshi ${ctx.message.text}\nEndi telefon raqamingizni kiriting.`,
-            );
+            if (/^[a-zA-Z]+$/.test(ctx.message.text)) {
+              await user.update({
+                real_name: ctx.message.text,
+                last_state: 'phone',
+              });
+              await ctx.reply(
+                `${ctx.message.text} telefon raqamingizni kiriting.`,
+              );
+            } else {
+              await ctx.reply(`To'g'ri ism kiriting ⚠️`, {
+                parse_mode: 'HTML',
+              });
+            }
           } else if (user.last_state == 'phone') {
             const phone = ctx.message.text;
             if (/[012345789][0-9]{8}$/.test(phone)) {
@@ -176,7 +266,7 @@ export class AppService {
               return await boshMenu(ctx);
             } else {
               await ctx.reply(
-                `Telefon raqamni to'g'ri kiriting.\nMisol : <pre>880001122</pre>`,
+                `Telefon raqamni to'g'ri kiriting.\nMisol : <i>880001122</i>`,
               );
             }
           } else if (user.last_state == 'service') {
@@ -198,6 +288,38 @@ export class AppService {
                 );
                 return;
               }
+            }
+          } else if (user.last_state == 'change_name') {
+            if (/^[a-zA-Z]+$/.test(ctx.message.text)) {
+              await user.update({
+                real_name: ctx.message.text,
+                last_state: 'settings',
+              });
+              await ctx.reply(
+                `${user.real_name} ismingiz muvaffaqiyatli o'zgartirildi 🎉`,
+                { parse_mode: 'HTML' },
+              );
+              this.settings(ctx);
+            } else {
+              await ctx.reply(`To'g'ri ism kiriting ⚠️`, {
+                parse_mode: 'HTML',
+              });
+            }
+          } else if (user.last_state == 'change_phone') {
+            if (/[012345789][0-9]{8}$/.test(ctx.message.text)) {
+              await user.update({
+                real_name: ctx.message.text,
+                last_state: 'settings',
+              });
+              await ctx.reply(
+                `${user.real_name} ismingiz muvaffaqiyatli o'zgartirildi 🎉`,
+                { parse_mode: 'HTML' },
+              );
+              this.settings(ctx);
+            } else {
+              await ctx.reply(`To'g'ri telefon raqam kiriting ⚠️`, {
+                parse_mode: 'HTML',
+              });
             }
           } else {
             await await firstSalom(ctx);

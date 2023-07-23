@@ -64,6 +64,31 @@ export class AppUpdate {
     return this.appService.settings(ctx);
   }
 
+  @Hears("👤 Ism o'zgartirish")
+  async changeName(@Ctx() ctx: Context) {
+    return this.appService.changeName(ctx);
+  }
+
+  @Hears("📱 Telefon raqamni o'zgartirish")
+  async changePhone(@Ctx() ctx: Context) {
+    return this.appService.changePhone(ctx);
+  }
+
+  @Hears('❌ Bekor qilish')
+  async cancel(@Ctx() ctx: Context) {
+    return this.appService.cancel(ctx);
+  }
+
+  @Hears('✍️ Prays')
+  async price(@Ctx() ctx: Context) {
+    return this.appService.price(ctx);
+  }
+
+  @Hears('🗑 Savatcha')
+  async basket(@Ctx() ctx: Context) {
+    return this.appService.basket(ctx);
+  }
+
   @On('message')
   async onMessage(@Ctx() ctx: Context) {
     return this.appService.onMessage(ctx);
