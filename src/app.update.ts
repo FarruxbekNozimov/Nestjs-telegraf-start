@@ -19,13 +19,28 @@ export class AppUpdate {
     return this.appService.onStart(ctx);
   }
 
-  @Hears("👤 Ro'yhatdan o'tish")
+  @Hears("👤 Ro'yxatdan o'tish")
   async registrtion(@Ctx() ctx: Context) {
     return this.appService.registration(ctx);
   }
 
-  @Hears('👨‍🚀 Usta')
-  async hearsMaster(@Ctx() ctx: Context) {
-    console.log('1');
+  @Hears('👨‍🔧 Xizmat turini tanlash')
+  async serviceType(@Ctx() ctx: Context) {
+    return this.appService.serviceType(ctx);
+  }
+
+  @Hears('📙 Biz xaqimizda')
+  async aboutUs(@Ctx() ctx: Context) {
+    return this.appService.aboutUs(ctx);
+  }
+
+  @Hears('⬅️ Ortga')
+  async goBack(@Ctx() ctx: Context) {
+    return this.appService.goBack(ctx);
+  }
+
+  @On('message')
+  async onMessage(@Ctx() ctx: Context) {
+    return this.appService.onMessage(ctx);
   }
 }
