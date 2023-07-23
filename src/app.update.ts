@@ -14,6 +14,19 @@ import { AppService } from './app.service';
 export class AppUpdate {
   constructor(private readonly appService: AppService) {}
 
+  @Action('changeuz')
+  async changeUz(@Ctx() ctx: Context) {
+    return this.appService.changeLang(ctx, 'uz');
+  }
+  @Action('changeru')
+  async changeRu(@Ctx() ctx: Context) {
+    return this.appService.changeLang(ctx, 'ru');
+  }
+  @Action('changeen')
+  async changeEn(@Ctx() ctx: Context)   {
+    return this.appService.changeLang(ctx, 'en');
+  }
+
   @Start()
   async onStart(@Ctx() ctx: Context) {
     return this.appService.onStart(ctx);

@@ -13,6 +13,7 @@ import { firstSalom } from './helpers/firstSalom';
 import { paymentsType } from './helpers/payment';
 import { paymentsList } from './constants/payments';
 import { settings } from './helpers/settings';
+import { changeLang } from './helpers/changeLang';
 
 @Injectable()
 export class AppService {
@@ -25,26 +26,10 @@ export class AppService {
     const user = await this.userRepository.findOne({
       where: { user_id: `${ctx.from.id}` },
     });
-    await await firstSalom(ctx);
+    await firstSalom(ctx);
     if (user && user.status) {
+      console.log('bosh menu');
       return await boshMenu(ctx);
-    } else {
-      await ctx.reply("Iltimos ro'yxatdan o'tishingiz lozim ⬇️", {
-        parse_mode: 'HTML',
-        ...Markup.keyboard([["👤 Ro'yxatdan o'tish"]])
-          .oneTime()
-          .resize(),
-      });
-    }
-  }
-
-  async registration(ctx: Context) {
-    const user = await this.userRepository.findOne({
-      where: { user_id: `${ctx.from.id}` },
-    });
-    console.log(user);
-    if (user) {
-      console.log(ctx.from);
     } else {
       await this.userRepository.create({
         user_id: `${ctx.from.id}`,
@@ -53,7 +38,42 @@ export class AppService {
         username: `${ctx.from.username}`,
         last_state: 'name',
       });
+      await changeLang(ctx);
+    }
+  }
 
+  async changeLang(ctx: Context, lang: string) {
+    const user = await this.userRepository.findOne({
+      where: { user_id: `${ctx.from.id}` },
+    });
+    try {
+      await user.update({ lang: lang });
+      let replyMsg;
+      if (user.lang == 'uz') {
+        replyMsg = `Iltimos ro'yxatdan o'tishingiz lozim ⬇️`;
+      } else if (user.lang == 'ru') {
+        replyMsg = `Пожалуйста, зарегистрируйтесь ⬇️`;
+      } else if (user.lang == 'en') {
+        replyMsg = `Please register ⬇️`;
+      }
+      await ctx.reply(replyMsg, {
+        parse_mode: 'HTML',
+        ...Markup.keyboard([["👤 Ro'yxatdan o'tish"]])
+          .oneTime()
+          .resize(),
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async registration(ctx: Context) {
+    const user = await this.userRepository.findOne({
+      where: { user_id: `${ctx.from.id}` },
+    });
+    if (user && user.status) {
+      //
+    } else {
       await ctx.reply("To'liq ismingizni kiriting", {
         parse_mode: 'HTML',
         ...Markup.keyboard([]).oneTime().resize(),
@@ -69,7 +89,7 @@ export class AppService {
     const user = await this.userRepository.findOne({
       where: { user_id: `${ctx.from.id}` },
     });
-    if (user) {
+    if (user && user.status) {
       await user.update({ last_state: 'service' });
 
       return await services(ctx);
@@ -96,7 +116,7 @@ export class AppService {
       const user = await this.userRepository.findOne({
         where: { user_id: `${ctx.from.id}` },
       });
-      if (user) {
+      if (user && user.status) {
         await user.update({ last_state: 'payment' });
         return await paymentsType(ctx);
       }
@@ -110,7 +130,7 @@ export class AppService {
       const user = await this.userRepository.findOne({
         where: { user_id: `${ctx.from.id}` },
       });
-      if (user) {
+      if (user && user.status) {
         await user.update({ last_state: 'settings' });
         await settings(ctx, user);
       }
@@ -125,7 +145,7 @@ export class AppService {
         where: { user_id: `${ctx.from.id}` },
       });
 
-      if (user) {
+      if (user && user.status) {
         await user.update({ last_state: 'change_name' });
         await ctx.reply(`Ismingizni kiriting`, {
           parse_mode: 'HTML',
@@ -145,7 +165,7 @@ export class AppService {
         where: { user_id: `${ctx.from.id}` },
       });
 
-      if (user) {
+      if (user && user.status) {
         await user.update({ last_state: 'change_phone' });
         await ctx.reply(`Telefon raqamingizni kiriting`, {
           parse_mode: 'HTML',
@@ -164,7 +184,7 @@ export class AppService {
       const user = await this.userRepository.findOne({
         where: { user_id: `${ctx.from.id}` },
       });
-      if (user) {
+      if (user && user.status) {
         await user.update({ last_state: 'settings' });
         await settings(ctx, user);
       }
@@ -178,7 +198,7 @@ export class AppService {
       const user = await this.userRepository.findOne({
         where: { user_id: `${ctx.from.id}` },
       });
-      if (user) {
+      if (user && user.status) {
         await ctx.reply(`Prays soon`, {});
       }
     } catch (error) {
@@ -191,7 +211,7 @@ export class AppService {
       const user = await this.userRepository.findOne({
         where: { user_id: `${ctx.from.id}` },
       });
-      if (user) {
+      if (user && user.status) {
         await ctx.reply(`🗑 Savatcha bo'sh 🤷‍♂️`, {});
       }
     } catch (error) {
@@ -204,13 +224,13 @@ export class AppService {
       const user = await this.userRepository.findOne({
         where: { user_id: `${ctx.from.id}` },
       });
-      if (user.last_state == 'service') {
+      if (user && user.status && user.last_state == 'service') {
         await user.update({ last_state: 'menu' });
         return await boshMenu(ctx);
-      } else if (user.last_state == 'payment') {
+      } else if (user && user.status && user.last_state == 'payment') {
         await user.update({ last_state: 'menu' });
         return await boshMenu(ctx);
-      } else if (user.last_state == 'settings') {
+      } else if (user && user.status && user.last_state == 'settings') {
         await user.update({ last_state: 'menu' });
         return await boshMenu(ctx);
       }
@@ -237,8 +257,8 @@ export class AppService {
         where: { user_id: `${ctx.from.id}` },
       });
       if ('text' in ctx.message) {
-        if (user) {
-          if (user.last_state == 'name') {
+        if (user && user.status) {
+          if (user && user.status && user.last_state == 'name') {
             if (/^[a-zA-Z]+$/.test(ctx.message.text)) {
               await user.update({
                 real_name: ctx.message.text,
@@ -252,7 +272,7 @@ export class AppService {
                 parse_mode: 'HTML',
               });
             }
-          } else if (user.last_state == 'phone') {
+          } else if (user && user.status && user.last_state == 'phone') {
             const phone = ctx.message.text;
             if (/[012345789][0-9]{8}$/.test(phone)) {
               await user.update({
@@ -269,7 +289,7 @@ export class AppService {
                 `Telefon raqamni to'g'ri kiriting.\nMisol : <i>880001122</i>`,
               );
             }
-          } else if (user.last_state == 'service') {
+          } else if (user && user.status && user.last_state == 'service') {
             for (let i in servicesList) {
               if (servicesList[i][0] == ctx.message.text) {
                 await ctx.reply(
@@ -279,7 +299,7 @@ export class AppService {
                 return;
               }
             }
-          } else if (user.last_state == 'payment') {
+          } else if (user && user.status && user.last_state == 'payment') {
             for (let i in paymentsList) {
               if (paymentsList[i][0] == ctx.message.text) {
                 await ctx.reply(
@@ -289,7 +309,7 @@ export class AppService {
                 return;
               }
             }
-          } else if (user.last_state == 'change_name') {
+          } else if (user && user.status && user.last_state == 'change_name') {
             if (/^[a-zA-Z]+$/.test(ctx.message.text)) {
               await user.update({
                 real_name: ctx.message.text,
@@ -305,7 +325,7 @@ export class AppService {
                 parse_mode: 'HTML',
               });
             }
-          } else if (user.last_state == 'change_phone') {
+          } else if (user && user.status && user.last_state == 'change_phone') {
             if (/[012345789][0-9]{8}$/.test(ctx.message.text)) {
               await user.update({
                 real_name: ctx.message.text,
